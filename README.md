@@ -16,39 +16,42 @@ You can watch a video demonstrating how to use the script here:
 
 ## How to use
 ### Customize:
-This script has a Customization Section at the beginning. You can use the script after replacing the values of the customizations as needed. The following is the code in the `spine_export.sh`, but a similar customization section is also in `spine_export.bat`:
-```
-###########################
-## Customization Section ##
-###########################
-
-
-# Enter the path to the Spine executable.
-# On Windows this should be the Spine.com file.
-SPINE_EXE="C:/Program Files/Spine/Spine.com"
-
-
-# Specify the version of Spine Editor you want to use.
-# End with ".XX" to use the latest patch version. For example: 4.1.XX
-VERSION="4.1.XX"
-
-
-# Specify the default export format.
-# If "json" or "binary" is specified: JSON or binary export will be performed with default settings.
-# If "json+pack" or "binary+pack" is specified: Texture packing will also be performed with default settings.
-# Alternatively, you can specify the path to an export settings JSON file to use it for the default export settings.
-DEFAULT_FORMAT="binary+pack"
-
-
-# Specify the default output directory when exporting in the default format.
-# If the export settings JSON file is found, the output path in it will be used.
-DEFAULT_OUTPUT_DIR="export"
-
-
-# Define whether to perform animation cleanup (true/false).
-# Even if set to 'false,' cleanup will be performed if 'cleanUp' is set to 'true' in the export settings JSON file.
-CLEANUP="false"
-```
+This script has a Customization Section at the beginning. You can use the script after replacing the values of the customizations as needed. 
+<details>
+<summary>Click to view details</summary>
+The following is the code in the `spine_export.sh`, but a similar customization section is also in `spine_export.bat`:
+  
+    ###########################
+    ## Customization Section ##
+    ###########################
+    
+    
+    # Enter the path to the Spine executable.
+    # On Windows this should be the Spine.com file.
+    SPINE_EXE="C:/Program Files/Spine/Spine.com"
+    
+    
+    # Specify the version of Spine Editor you want to use.
+    # End with ".XX" to use the latest patch version. For example: 4.1.XX
+    VERSION="4.1.XX"
+    
+    
+    # Specify the default export format.
+    # If "json" or "binary" is specified: JSON or binary export will be performed with default settings.
+    # If "json+pack" or "binary+pack" is specified: Texture packing will also be performed with default settings.
+    # Alternatively, you can specify the path to an export settings JSON file to use it for the default export settings.
+    DEFAULT_FORMAT="binary+pack"
+    
+    
+    # Specify the default output directory when exporting in the default format.
+    # If the export settings JSON file is found, the output path in it will be used.
+    DEFAULT_OUTPUT_DIR="export"
+    
+    
+    # Define whether to perform animation cleanup (true/false).
+    # Even if set to 'false,' cleanup will be performed if 'cleanUp' is set to 'true' in the export settings JSON file.
+    CLEANUP="false"
+</details>
 
 **There are five customizations is available:**
 
@@ -69,7 +72,7 @@ Click the `spine_export.bat` or open it via command prompt. The script will ask 
 
 ---
 
-### For MacOS:
+### Using spine_export.sh (For MacOS):
 **1.Make the script executable**:  
 Open Terminal.app, navigate to the directory where your script is located. Use the `chmod +x` command to make your script executable. For example:
 ```
