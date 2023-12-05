@@ -27,9 +27,6 @@ DEFAULT_OUTPUT_DIR="export"
 # Even if set to 'false,' cleanup will be performed if 'cleanUp' is set to 'true' in the export settings JSON file.
 CLEANUP="false"
 
-# Enter the path to the jq executable.
-JQ_EXE="/usr/bin/jq"
-
 ##################
 ## Begin Script ##
 ##################
@@ -37,7 +34,7 @@ JQ_EXE="/usr/bin/jq"
 set -e
 
 if [ ! -f "$SPINE_EXE" ]; then
-   SPINE_EXE="/mnt/c/Program Files/Spine/Spine.com"
+	SPINE_EXE="/mnt/c/Program Files/Spine/Spine.com"
 	if [ ! -f "$SPINE_EXE" ]; then
 		SPINE_EXE="/cygdrive/C/Program Files/Spine/Spine.com"
 		if [ ! -f "$SPINE_EXE" ]; then
@@ -53,33 +50,6 @@ if [ ! -f "$SPINE_EXE" ]; then
 	exit 1
 fi
 
-# Check if 'jq' is available.
-jq_names=("jq" "jq-win64" "jq-win32")
-if [ ! -f "$JQ_EXE" ]; then
-	for jq_name in "${jq_names[@]}"; do
-		if command -v $jq_name &> /dev/null; then
-			JQ_EXE=`command -v $jq_name`
-			break
-		fi
-	done
-fi
-if [ ! -f "$JQ_EXE" ]; then
-	jq_dirs=("/usr/bin/" "C:/Program Files/Git/usr/bin/")
-	for dir in "${jq_dirs[@]}"; do
-		for name in "${jq_names[@]}"; do
-			if [ -f "$dir$name" ]; then
-				JQ_EXE="$dir$name"
-				break 2
-			fi
-		done
-	done
-fi
-if [ ! -f "$JQ_EXE" ]; then
-	echo "Error: JQ executable was not found."
-	echo "Install JQ or edit the script and set the 'JQ_EXE' path."
-	exit 1
-fi
-
 search_dir="$1"
 if [ "$#" -eq 0 ]; then
 	echo "Enter the path to a directory containing the Spine projects to export:"
@@ -87,42 +57,43 @@ if [ "$#" -eq 0 ]; then
 fi
 
 echo "Spine: $SPINE_EXE"
-echo "JQ: $JQ_EXE"
 echo "Path: $search_dir"
 
 exportUsingJsonSettings () {
 	local json_file=$1
 	local file_path=$2
 
-	# Extract the value of the "output" parameter within JSON data using 'jq'.
-	output_path=$("$JQ_EXE" -r '.output' "$json_file")
-
-	# Check if the output path exists.
-	if [ ! -e "$output_path" ]; then
-		directory_path="$(dirname "$file_path")"
-		output_path=$directory_path/$DEFAULT_OUTPUT_DIR
-    	echo "The path specified in the "output" parameter within JSON data does not exist. Export to default output directory: $output_path"
-	fi
+	# Extract the value of the "output" parameter within JSON data using 'sed'.
+	# Replaces double-backslash and trailing comma.
+	output_path=$(sed -n 's/"output".*"\([^"]*\)"/\1/p' "$json_file" | sed -r 's/\\\\/\\/g' | sed -r 's/,$//g' )
 
 	# Add the appropriate parameters to the 'command_args' array.
-	command_args=("--update" "$VERSION" "--input" "$file_path")
+	local command_args=("--update" "$VERSION" "--input" "$file_path")
 
-	# Add the -m option if CLEANUP is set to "true".
+	# Add the --clean option if CLEANUP is set to "true".
 	if [ "$CLEANUP" = "true" ]; then
 		command_args+=("--clean")
-	else
-		# Even if CLEANUP is set to 'false,' cleanup will be performed if 'cleanUp' is set to 'true' in the export settings JSON file.
-		cleanUp=$("$JQ_EXE" -r '.cleanUp' "$json_file")
-		if [ "$cleanUp" = "true" ]; then
-		command_args+=("--clean")
-		fi
 	fi
 
 	# Add other options
-	command_args+=("--output" "$output_path" "--export" "$json_file")
+	command_args_fallback="${command_args[@]}"
+	command_args+=("--export" "$json_file")
 
-	"$SPINE_EXE" "${command_args[@]}"
-	echo "Exported to the following directory: $output_path"
+	if "$SPINE_EXE" "${command_args[@]}"; then
+		echo "Exported to the following directory: $output_path"
+	else
+		export_error_count=$((export_error_count + 1))
+		directory_path=$(dirname "$file_path")
+		output_path="$directory_path/$DEFAULT_OUTPUT_DIR"
+		echo "Export failed. Exporting to default output directory $output_path."
+
+		command_args_fallback+=("--output" "$output_path" "--export" "$json_file")
+		if "$SPINE_EXE" "${command_args_fallback[@]}"; then
+			echo "Exported to the following default output directory: $output_path"
+		else
+			echo "Export to default output directory failed."
+		fi
+	fi
 }
 
 exportUsingDefaultSettings () {
@@ -138,21 +109,28 @@ exportUsingDefaultSettings () {
 
 	# Add other output and export options.
 	command_args+=("--output" "$directory_path/$DEFAULT_OUTPUT_DIR" "--export" "$DEFAULT_FORMAT")
-	"$SPINE_EXE" "${command_args[@]}"
-	echo "Exported to the following directory: $directory_path/$DEFAULT_OUTPUT_DIR"
+	if "$SPINE_EXE" "${command_args[@]}"; then
+		echo "Exported to the following directory: $directory_path/$DEFAULT_OUTPUT_DIR"
+	else
+		export_error_count=$((export_error_count + 1))
+		echo "Export failed."
+	fi
 }
 
 isValidExportJson () {
 	local json_file="$1"
-	if "$JQ_EXE" -e '.class | contains("export-")' "$json_file" >/dev/null; then
-		return 0
-	else
+	local export_type=$(grep 'class":\s*"export-.*"' "$json_file")
+	# Check if '"class": "export-"' is found, return 1 if not.
+	if [[ -z "$export_type" ]] ; then
 		return 1
+	else
+		return 0
 	fi
 }
 
 # Count the .spine files found.
 spine_file_count=0
+export_error_count=0
 
 # Save .spine files to a temporary file.
 tmp_file=$(mktemp)
@@ -237,8 +215,11 @@ if [ $spine_file_count -eq 0 ]; then
 	exit 1
 else
 	echo "Exporting complete."
+	if [ $export_error_count -ne 0 ]; then
+		echo "$export_error_count error(s) during export."
+	fi
 	echo "================================================================================"
 fi
 
-# Wait 1 second before script completes.
-sleep 1
+# Comment out the following line to exit without waiting for a keypress.
+read -n 1 -s -r -p "Press any key to exit."
