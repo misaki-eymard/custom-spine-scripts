@@ -19,12 +19,13 @@ SET VERSION=4.1.XX
 :: Alternatively, you can specify the path to an export settings JSON file to use it for the default export settings.
 SET DEFAULT_FORMAT=binary+pack
 
+:: Specify the default output directory when exporting in the default format.
+:: If the export settings JSON file is found, the output path in it will be used.
+SET DEFAULT_OUTPUT_DIR=export
+
 :: Decide whether to perform animation cleanup (true/false).
 :: Even if set to 'false,' cleanup will be performed if 'cleanUp' is set to 'true' in the export settings JSON file.
 SET CLEANUP=false
-
-:: Enter the path to the jq executable.
-SET JQ_EXE="C:\ProgramData\chocolatey\bin\jq.exe"
 
 ::::::::::::::::::
 :: Begin Script ::
@@ -44,40 +45,6 @@ IF NOT EXIST !SPINE_EXE! (
 	exit /B 1
 )
 
-:: Check if 'jq' is available.
-SET jq_names=(jq.exe, jq-win64.exe, jq-win32.exe)
-SET jq_dirs=("%SystemRoot%\system32" "C:\ProgramData\chocolatey\bin")
-IF NOT EXIST !JQ_EXE! (
-	FOR %%N in %jq_names% DO (
-		SET "jq_name=%%N"
-		SET found=false
-		WHERE !jq_name! >NUL 2>NUL && SET found=true
-		IF !found!==true (
-			:: set JQ_EXE to output of WHERE call
-			FOR /F %%A in ('WHERE !jq_name!') do set JQ_EXE=%%A
-			set JQ_EXE="!JQ_EXE!"
-			break
-		)
-	)
-)
-IF NOT EXIST !JQ_EXE! (
-	FOR %%D in %jq_dirs% DO (
-		FOR %%N in %jq_names% DO (
-			SET "path=%%~D\%%N"
-			IF EXIST !path! (
-				SET JQ_EXE="!path!"
-				GOTO break_jq_loops
-			)
-		)
-	)
-)
-:break_jq_loops
-IF NOT EXIST !JQ_EXE! (
-	echo Error: JQ executable was not found.
-	echo Install JQ or edit the script and set the 'JQ_EXE' path.
-	exit /B 1
-)
-
 SET "search_dir=%1"
 IF "%~1"=="" (
 	SET /P "search_dir=Enter the path to a directory containing the Spine projects to export: "
@@ -86,11 +53,11 @@ IF "%~1"=="" (
 SET search_dir=%search_dir:"=%
 
 echo Spine: !SPINE_EXE:"=!
-echo JQ: !JQ_EXE:"=!
 echo Path: %search_dir%
 
 :: Count the .spine files found.
 SET spine_file_count=0
+SET export_error_count=0
 
 :: Save .spine files to a temporary file.
 SET "tmp_file=%temp%\tempfile.tmp"
@@ -186,6 +153,9 @@ IF %spine_file_count% EQU 0 (
 	exit /B 1
 ) ELSE (
 	echo Exporting complete.
+	IF !export_error_count! NEQ 0 (
+		echo !export_error_count! error^(s^) during export.
+	)
 	echo ================================
 )
 exit /B 0
@@ -199,13 +169,13 @@ exit /B 0
 	:: %1 is output boolean parameter
 	SET "json_file=%~2"
 	SET "%1=false"
-	FOR /F "usebackq" %%L IN (`^"!JQ_EXE! -e ".class | contains(\"export-\")" "!json_file!" ^"`) DO (
-		IF %%L==true (
-			SET "%1=true"
-			exit /B 0
-		) ELSE (
-			exit /B 0
-		)
+
+	>NUL findstr /r "class\":.*\"export-.*\"" "!json_file!"
+	IF %ERRORLEVEL% EQU 0 (
+		SET "%1=true"
+		exit /B 0
+	) ELSE (
+		exit /B 0
 	)
 exit /B 0
 
@@ -213,23 +183,32 @@ exit /B 0
 	SET "json_file=%~1"
 	SET "file_path=%~2"
 
-	FOR /F "usebackq" %%M IN (`^"!JQ_EXE! -r ".output" "!json_file!" ^"`) DO SET "output_path=%%M"
-		
-	:: Add the -m option if CLEANUP is set to "true".
+	FOR /F "usebackq tokens=2 delims=,%TAB% " %%M IN (`findstr /r "output[^^F].*" "!json_file!"`) DO SET "output_path=%%M"
+
+	:: Add the --clean option if CLEANUP is set to "true".
 	SET CLEANUP_FLAG=
 	IF "%CLEANUP%"=="true" (
 		SET CLEANUP_FLAG="--clean"
+	)
+	
+	!SPINE_EXE! --update %VERSION% --input "!file_path!" !CLEANUP_FLAG! --export "!json_file!"
+	IF !ERRORLEVEL!==0 (
+		echo Exported to the following directory: !output_path!
 	) ELSE (
-		:: Even if CLEANUP is set to 'false,' cleanup will be performed if 'cleanUp' is set to 'true' in the export settings JSON file.
-		FOR /F "usebackq" %%N IN (`^"!JQ_EXE! -r ".cleanUp" "!json_file!" ^"`) DO (
-			IF %%N==true (
-				SET CLEANUP_FLAG="--clean"
-			)
+		SET /A export_error_count +=1
+		FOR %%A IN ("!file_path!") DO SET "directory_path=%%~dpA"
+		SET output_path="!directory_path!%DEFAULT_OUTPUT_DIR%"
+		echo Export failed. Exporting to default output directory !output_path!.
+		
+		!SPINE_EXE! --update %VERSION% --input "!file_path!" !CLEANUP_FLAG! --output "!output_path!" --export "!json_file!"
+		IF !ERRORLEVEL!==0 (
+			echo Exported to the following directory: !output_path!
+		) ELSE (
+			echo Export to default output directory failed.
 		)
 	)
 
-	!SPINE_EXE! --update %VERSION% --input "!file_path!" !CLEANUP_FLAG! --output "!output_path!" --export "!json_file!"
-	echo Exported to: !output_path!
+	
 exit /B 0
 
 :exportUsingDefaultSettings
@@ -245,5 +224,10 @@ exit /B 0
 	)
 
 	!SPINE_EXE! --update %VERSION% --input "!file_path!" !CLEANUP_FLAG! --output "!directory_path!\export" --export !DEFAULT_FORMAT!
-	echo Exported to: !directory_path!
+	IF !ERRORLEVEL!==0 (
+		echo Exported to the following directory: !directory_path!
+	) ELSE (
+		SET /A export_error_count +=1
+		echo Export failed.
+	)
 exit /B 0
