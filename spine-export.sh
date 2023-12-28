@@ -7,7 +7,7 @@
 
 # Enter the path to the Spine executable.
 # On Windows this should be the Spine.com file.
-SPINE_EXE="C:/Program Files/Spine/Spine.com"
+SPINE_EXE="/Applications/Spine.app/Contents/MacOS/Spine"
 
 # Specify the version of Spine Editor you want to use.
 # End with ".XX" to use the latest patch version. For example: 4.1.XX
@@ -34,11 +34,11 @@ CLEANUP="false"
 set -e
 
 if [ ! -f "$SPINE_EXE" ]; then
-	SPINE_EXE="/mnt/c/Program Files/Spine/Spine.com"
+	SPINE_EXE="C:/Program Files/Spine/Spine.com"
 	if [ ! -f "$SPINE_EXE" ]; then
-		SPINE_EXE="/cygdrive/C/Program Files/Spine/Spine.com"
+		SPINE_EXE="/mnt/c/Program Files/Spine/Spine.com"
 		if [ ! -f "$SPINE_EXE" ]; then
-			SPINE_EXE="/Applications/Spine.app/Contents/MacOS/Spine"
+			SPINE_EXE="/cygdrive/C/Program Files/Spine/Spine.com"
 		fi
 	fi
 fi
