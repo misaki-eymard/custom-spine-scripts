@@ -13,13 +13,13 @@ SPINE_EXE="C:/Program Files/Spine/Spine.com"
 # End with ".XX" to use the latest patch version. For example: 4.1.XX
 VERSION="4.1.XX"
 
-# Specify the default export format.
+# Specify the default export.
 # If "json" or "binary" is specified: JSON or binary export will be performed with default settings.
 # If "json+pack" or "binary+pack" is specified: Texture packing will also be performed with default settings.
 # Alternatively, you can specify the path to an export settings JSON file to use it for the default export settings.
-DEFAULT_FORMAT="binary+pack"
+DEFAULT_EXPORT="binary+pack"
 
-# Specify the default output directory when exporting in the default format.
+# Specify the default output directory when exporting in the default export.
 # If the export settings JSON file is found, the output path in it will be used.
 DEFAULT_OUTPUT_DIR="export"
 
@@ -108,7 +108,7 @@ exportUsingDefaultSettings () {
 	fi
 
 	# Add other output and export options.
-	command_args+=("--output" "$directory_path/$DEFAULT_OUTPUT_DIR" "--export" "$DEFAULT_FORMAT")
+	command_args+=("--output" "$directory_path/$DEFAULT_OUTPUT_DIR" "--export" "$DEFAULT_EXPORT")
 	if "$SPINE_EXE" "${command_args[@]}"; then
 		echo "Exported to the following directory: $directory_path/$DEFAULT_OUTPUT_DIR"
 	else
@@ -195,11 +195,11 @@ while IFS= read -r file_path; do
 			echo "Exporting with the export settings JSON file: $relative_json_path"
 			exportUsingJsonSettings "$json_file" "$file_path"
 		else
-			echo "The '.export.json' file does not appear to be export settings JSON. Default settings ('$DEFAULT_FORMAT') will be used for export."
+			echo "The '.export.json' file does not appear to be export settings JSON. Default settings ('$DEFAULT_EXPORT') will be used for export."
 			exportUsingDefaultSettings "$directory_path" "$file_path"
 		fi
 	else
-		echo "No '.export.json' files were found in the same directory as the Spine project. Default settings ('$DEFAULT_FORMAT') will be used for export."
+		echo "No '.export.json' files were found in the same directory as the Spine project. Default settings ('$DEFAULT_EXPORT') will be used for export."
 		exportUsingDefaultSettings "$directory_path" "$file_path"
 	fi
 done < "$tmp_file"
