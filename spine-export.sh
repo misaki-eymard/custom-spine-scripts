@@ -83,8 +83,8 @@ exportUsingJsonSettings () {
 		echo "Exported to the following directory: $output_path"
 	else
 		export_error_count=$((export_error_count + 1))
-		directory_path=$(dirname "$file_path")
-		output_path="$directory_path/$DEFAULT_OUTPUT_DIR"
+		parent_path=$(dirname "$file_path")
+		output_path="$parent_path/$DEFAULT_OUTPUT_DIR"
 		echo "Export failed. Exporting to default output directory $output_path."
 
 		command_args_fallback+=("--output" "$output_path" "--export" "$json_file")
@@ -97,7 +97,7 @@ exportUsingJsonSettings () {
 }
 
 exportUsingDefaultSettings () {
-	local directory_path="$1"
+	local parent_path="$1"
 	local file_path="$2"
 
 	local command_args=("--update" "$VERSION" "--input" "$file_path")
@@ -108,9 +108,9 @@ exportUsingDefaultSettings () {
 	fi
 
 	# Add other output and export options.
-	command_args+=("--output" "$directory_path/$DEFAULT_OUTPUT_DIR" "--export" "$DEFAULT_EXPORT")
+	command_args+=("--output" "$parent_path/$DEFAULT_OUTPUT_DIR" "--export" "$DEFAULT_EXPORT")
 	if "$SPINE_EXE" "${command_args[@]}"; then
-		echo "Exported to the following directory: $directory_path/$DEFAULT_OUTPUT_DIR"
+		echo "Exported to the following directory: $parent_path/$DEFAULT_OUTPUT_DIR"
 	else
 		export_error_count=$((export_error_count + 1))
 		echo "Export failed."
@@ -148,8 +148,8 @@ while IFS= read -r file_path; do
 	echo "================================================================================"
 	echo "#$spine_file_count : $relative_path"
 
-	# Set directory_path to the .spine file's parent directory.
-	directory_path="$(dirname "$file_path")"
+	# Set parent_path to the .spine file's parent directory.
+	parent_path="$(dirname "$file_path")"
 
 	# Initialize the json_files array.
 	json_files=()
@@ -158,7 +158,7 @@ while IFS= read -r file_path; do
 	shopt -s nullglob
 
 	# Find .export.json files within the specified directory and add them to the json_files array.
-	for json_file in "$directory_path"/*.export.json; do
+	for json_file in "$parent_path"/*.export.json; do
 		json_files+=("$json_file")
 	done
 
@@ -196,11 +196,11 @@ while IFS= read -r file_path; do
 			exportUsingJsonSettings "$json_file" "$file_path"
 		else
 			echo "The '.export.json' file does not appear to be export settings JSON. Default settings ('$DEFAULT_EXPORT') will be used for export."
-			exportUsingDefaultSettings "$directory_path" "$file_path"
+			exportUsingDefaultSettings "$parent_path" "$file_path"
 		fi
 	else
 		echo "No '.export.json' files were found in the same directory as the Spine project. Default settings ('$DEFAULT_EXPORT') will be used for export."
-		exportUsingDefaultSettings "$directory_path" "$file_path"
+		exportUsingDefaultSettings "$parent_path" "$file_path"
 	fi
 done < "$tmp_file"
 

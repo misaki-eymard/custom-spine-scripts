@@ -19,7 +19,7 @@ SET VERSION=4.1.XX
 :: Alternatively, you can specify the path to an export settings JSON file to use it for the default export settings.
 SET DEFAULT_EXPORT=binary+pack
 
-:: Specify the default output directory when exporting in the default export.
+:: Specify the default output folder(directory) when exporting in the default export.
 :: If the export settings JSON file is found, the output path in it will be used.
 SET DEFAULT_OUTPUT_DIR=export
 
@@ -47,7 +47,7 @@ IF NOT EXIST !SPINE_EXE! (
 
 SET "search_dir=%1"
 IF "%~1"=="" (
-	SET /P "search_dir=Enter the path to a directory containing the Spine projects to export: "
+	SET /P "search_dir=Enter the path to a folder containing the Spine projects to export: "
 )
 :: Remove quotes from input search dir.
 SET search_dir=%search_dir:"=%
@@ -65,7 +65,7 @@ SET "tmp_file=%temp%\tempfile.tmp"
 :: Search recursively for files with extensions ".spine" or ".json".
 dir /B /S /A-D "%search_dir%"\*.spine > "%tmp_file%"
 
-:: Check if there are files with extension ".spine" within the specified directory.
+:: Check if there are files with extension ".spine" within the specified folder.
 FOR /F "tokens=*" %%A in (%tmp_file%) DO ( 
 	SET "file_path=%%~A"
 	SET "file_extension=%%~xA"
@@ -80,10 +80,10 @@ FOR /F "tokens=*" %%A in (%tmp_file%) DO (
 		echo ================================
 		echo #!spine_file_count! : !relative_path!
 
-		:: Set directory_path to the .spine file's parent directory.
-		SET "directory_path=%%~dpA"
+		:: Set parent_path to the .spine file's parent folder.
+		SET "parent_path=%%~dpA"
 		:: Remove trailing backslash.
-		SET "directory_path=!directory_path:~0,-1!"
+		SET "parent_path=!parent_path:~0,-1!"
 
 		:: Initialize the json_files array.
 		SET "json_files="
@@ -91,8 +91,8 @@ FOR /F "tokens=*" %%A in (%tmp_file%) DO (
 		:: Count the .export.j	son files found.
 		SET json_files_count=0
 
-		:: Find .export.json files within the specified directory and add them to the json_files array.
-		FOR %%D IN ("!directory_path!\"*.export.json) DO (
+		:: Find .export.json files within the specified folder and add them to the json_files array.
+		FOR %%D IN ("!parent_path!\"*.export.json) DO (
 			CALL SET json_files[!json_files_count!]=%%D
 			SET /A json_files_count+=1
 		)
@@ -133,12 +133,12 @@ FOR /F "tokens=*" %%A in (%tmp_file%) DO (
 					CALL :exportUsingJsonSettings "!json_file!" "!file_path!"
 				) ELSE (
 					echo The '.export.json' file does not appear to be export settings JSON. Default settings ^(!DEFAULT_EXPORT!^) will be used for export.
-					CALL :exportUsingDefaultSettings "!directory_path!" "!file_path!"
+					CALL :exportUsingDefaultSettings "!parent_path!" "!file_path!"
 				)
 			)
 		) ELSE (
-			echo No '.export.json' files were found in the same directory as the Spine project. Default settings ^(!DEFAULT_EXPORT!^) will be used for export.
-			CALL :exportUsingDefaultSettings "!directory_path!" "!file_path!"
+			echo No '.export.json' files were found in the same folder as the Spine project. Default settings ^(!DEFAULT_EXPORT!^) will be used for export.
+			CALL :exportUsingDefaultSettings "!parent_path!" "!file_path!"
 		)
 	)
 )
@@ -193,18 +193,18 @@ exit /B 0
 	
 	!SPINE_EXE! --update %VERSION% --input "!file_path!" !CLEANUP_FLAG! --export "!json_file!"
 	IF !ERRORLEVEL!==0 (
-		echo Exported to the following directory: !output_path!
+		echo Exported to the following folder: !output_path!
 	) ELSE (
 		SET /A export_error_count +=1
-		FOR %%A IN ("!file_path!") DO SET "directory_path=%%~dpA"
-		SET output_path="!directory_path!%DEFAULT_OUTPUT_DIR%"
-		echo Export failed. Exporting to default output directory !output_path!.
+		FOR %%A IN ("!file_path!") DO SET "parent_path=%%~dpA"
+		SET output_path="!parent_path!%DEFAULT_OUTPUT_DIR%"
+		echo Export failed. Exporting to default output folder !output_path!.
 		
 		!SPINE_EXE! --update %VERSION% --input "!file_path!" !CLEANUP_FLAG! --output "!output_path!" --export "!json_file!"
 		IF !ERRORLEVEL!==0 (
-			echo Exported to the following directory: !output_path!
+			echo Exported to the following folder: !output_path!
 		) ELSE (
-			echo Export to default output directory failed.
+			echo Export to default output folder failed.
 		)
 	)
 
@@ -212,7 +212,7 @@ exit /B 0
 exit /B 0
 
 :exportUsingDefaultSettings
-	SET "directory_path=%~1"
+	SET "parent_path=%~1"
 	SET "file_path=%~2"
 
 	echo Exporting with default settings.
@@ -223,9 +223,9 @@ exit /B 0
 		SET CLEANUP_FLAG="--clean"
 	)
 
-	!SPINE_EXE! --update %VERSION% --input "!file_path!" !CLEANUP_FLAG! --output "!directory_path!\export" --export !DEFAULT_EXPORT!
+	!SPINE_EXE! --update %VERSION% --input "!file_path!" !CLEANUP_FLAG! --output "!parent_path!\export" --export !DEFAULT_EXPORT!
 	IF !ERRORLEVEL!==0 (
-		echo Exported to the following directory: !directory_path!
+		echo Exported to the following folder: !parent_path!
 	) ELSE (
 		SET /A export_error_count +=1
 		echo Export failed.
