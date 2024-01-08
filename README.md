@@ -14,8 +14,8 @@ The batch script `spine-export.bat` is for Windows and the Bash shell script `sp
 
 ## Script usage
 You can watch a video demonstrating how to use the script here:  
-**YouTube**: https://youtu.be/pOEx6r_1MqY
-[![Screen-Recording-2023-11-29-at-12 12 11_03407](https://github.com/misaki-eymard/custom-spine-scripts/assets/85478846/cb90d05c-ba7d-4c40-96c8-cfe7397649cc)]('https://youtu.be/pOEx6r_1MqY')
+**YouTube**: https://youtu.be/_orkfUSl9lk
+[![Batch export using scripts_00473](https://github.com/misaki-eymard/custom-spine-scripts/assets/85478846/c9b483e4-9155-435a-b762-ae81a8333860)]('https://youtu.be/_orkfUSl9lk')
 
 ---
 
