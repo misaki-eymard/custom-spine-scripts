@@ -103,6 +103,94 @@ The script searches the specified directory and all subdirectories. If it finds 
 
 ---
 
+### Default export settings
+To specify more detailed default export settings, you need to prepare an export settings JSON file.
+
+#### Save an export settings file
+On the export window in the Spine editor, there is a Save button in the lower left corner that allows you to save the current export settings as a JSON file.  
+![image1](https://github.com/misaki-eymard/custom-spine-scripts/assets/85478846/df7e97a3-a580-4f02-8aa5-693bd667f081)
+
+The saved export settings file will have the extension `.export.json`.  
+![image3](https://github.com/misaki-eymard/custom-spine-scripts/assets/85478846/aa6807e6-daa3-4492-80a6-f7c69c55555d)
+
+
+If `Pack` was checked in the export settings then the texture packer settings are also saved in the `.export.json` file.  
+![image2](https://github.com/misaki-eymard/custom-spine-scripts/assets/85478846/37f21286-1efe-49cd-8a18-35708c2ff51f)
+
+
+#### Set the default export settings
+Open the script file with any text editor and change the value of `DEFAULT_FORMAT` to the path of your .export.json file. For example:
+```
+DEFAULT_FORMAT=/path/to/spineboy.export.json
+```
+These settings will be used if no `.export.json` file is found next to a project file.
+
+Note that the exported files will be output using `DEFAULT_OUTPUT_DIR` in the Customization Section, not the output path in the `.export.json` file.
+
+---
+
+### Export settings per project
+To export a Spine project with different settings, prepare an `.export.json` file with the settings and saved it the same folder as the Spine project. For example, the filesystem hierarchy could look like this:
+```
+<Folder where you specify the path when running the script>
+        ├── 01
+        │   ├── skeleton1.spine
+        │   ├── skeleton1.export.json
+        │   ├── images
+        ├── 02
+        │   ├── skeleton2.spine
+        │   ├── skeleton2.export.json
+        │   ├── images 
+        └── 03
+            ├── skeleton3.spine
+            ├── skeleton3.export.json
+            └── images
+```
+
+The .export.json file name does not need to match the project file name.
+
+#### Multiple exports for the same project
+To export a single skeleton multiple times with different export settings, prepare and include that many .export.json files. For example, to export the skeleton data both in binary format and as a PNG sequence, your filesystem hierarchy could look like this:
+```
+<Folder where you specify the path when running the script>
+        ├── 01
+        │   ├── skeleton1.spine
+        │   ├── skeleton1_Binary.export.json
+        │   ├── skeleton1_PNG.export.json
+        │   ├── images
+        ├── 02
+        │   ├── skeleton2.spine
+        │   ├── skeleton2_Binary.export.json
+        │   ├── skeleton2_PNG.export.json
+        │   ├── images 
+        └── 03
+            ├── skeleton3.spine
+            ├── skeleton3_Binary.export.json
+            ├── skeleton3_PNG.export.json
+            └── images
+```
+
+#### Mixing default and custom settings
+A project file without an .export.json file in the same folder will be exported with default settings:
+```
+<Folder where you specify the path when running the script>
+        ├── 01
+        │   ├── skeleton1.spine
+        │   ├── skeleton1_Binary.export.json
+        │   ├── skeleton1_PNG.export.json
+        │   ├── images
+        ├── 02
+        │   ├── skeleton2.spine <This skeleton is exported with the default format>
+        │   ├── images 
+        └── 03
+            ├── skeleton3.spine
+            ├── skeleton3_Binary.export.json
+            ├── skeleton3_PNG.export.json
+            └── images
+```
+
+---
+
 # Script Details
 
 You are welcome to modify the script to meet your needs. We have written comments in the script to describe everything it does and more details can also be found below. (The following explanation is based on `spine-export.sh` because it is more readable.)
