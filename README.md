@@ -1,4 +1,4 @@
-# spine_export.sh / spine_export.bat
+# spine-export.sh / spine-export.bat
 These scripts can be used for exporting images, video, or skeleton data in JSON or binary format. The scripts look for an export settings file in the same folder as the project file, so each project can be exported differently.
 
 Using a shell script to export many projects at once has many advantages:
@@ -88,7 +88,7 @@ The script searches the specified folder and all subfolders. If it finds a `.spi
 **1.Make the script executable**:  
 Open Terminal, navigate to the directory where it is located, and then grant it permission with this command:
 ```
-chmod +x spine_export.sh
+chmod +x spine-export.sh
 ```
 
 **2.Run the script**:  
@@ -105,7 +105,7 @@ The script searches the specified directory and all subdirectories. If it finds 
 
 # Script Details
 
-You are welcome to modify the script to meet your needs. We have written comments in the script to describe everything it does and more details can also be found below.
+You are welcome to modify the script to meet your needs. We have written comments in the script to describe everything it does and more details can also be found below. (The following explanation is based on `spine-export.sh` because it is more readable.)
 
 ## Find .spine projects
 In this script, the following code generates a temporary file and stores the path in “tmp_file”:
