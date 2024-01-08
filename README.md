@@ -21,7 +21,7 @@ You can watch a video demonstrating how to use the script here:
 
 ## How to use
 ### Make customizations
-If you open the script with a text editor, you'll find a "Customization Section" at the top. Here is an excerpt from `spine-export.bat` ( `spine-export.sh` is very similar):  
+If you open the script with a text editor, you'll find a "Customization Section" at the top (the following image is from `spine-export.bat` but `spine-export.sh` is very similar):  
 
 ![CustomaizationSection](https://github.com/misaki-eymard/custom-spine-scripts/assets/85478846/007581d6-0e09-4377-96e6-92ac908ad24f)
 
@@ -55,13 +55,13 @@ The script searches the specified folder and all subfolders. If it finds a `.spi
 ---
 
 ### Running spine-export.sh
-**1.Make the script executable**:  
+**1.Make the script executable**  
 Open Terminal, navigate to the directory where it is located, and then grant it permission with this command:
 ```
 chmod +x spine-export.sh
 ```
 
-**2.Run the script**:  
+**2.Run the script**  
 To run the script, specify "./spine-export.sh" and then the path to the directory containing the Spine project you wish to export. For example:
 ```
 ./spine-export.sh /path/to/spine/project/directory/
