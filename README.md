@@ -21,39 +21,9 @@ You can watch a video demonstrating how to use the script here:
 
 ## How to use
 ### Make customizations
-If you open the script with a text editor, you'll find a "Customization Section" at the top. Here is an excerpt from `spine-export.bat` ( `spine-export.sh` is very similar):
-```
-:::::::::::::::::::::::::::
-:: Customization Section ::
-:::::::::::::::::::::::::::
+If you open the script with a text editor, you'll find a "Customization Section" at the top. Here is an excerpt from `spine-export.bat` ( `spine-export.sh` is very similar):  
 
-
-:: Enter the path to the Spine executable.
-:: This should be the Spine.com file.
-SET SPINE_EXE="C:\Program Files\Spine\Spine.com"
-
-
-:: Specify the version of Spine Editor you want to use.
-:: End with ".XX" to use the latest patch version. For example: 4.1.XX
-SET VERSION=4.1.XX
-
-
-:: Specify the default export format.
-:: If "json" or "binary" is specified: JSON or binary export will be performed with default settings.
-:: If "json+pack" or "binary+pack" is specified: Texture packing will also be performed with default settings.
-:: Alternatively, you can specify the path to an export settings JSON file to use it for the default export settings.
-SET DEFAULT_EXPORT=binary+pack
-
-
-:: Specify the default output directory when exporting in the default format.
-:: If the export settings JSON file is found, the output path in it will be used.
-SET DEFAULT_OUTPUT_DIR=export
-
-
-:: Decide whether to perform animation cleanup (true/false).
-:: Even if set to 'false,' cleanup will be performed if 'cleanUp' is set to 'true' in the export settings JSON file.
-SET CLEANUP=false
-```
+![CustomaizationSection](https://github.com/misaki-eymard/custom-spine-scripts/assets/85478846/007581d6-0e09-4377-96e6-92ac908ad24f)
 
 There are five customizations is available, and the first three settings should be reviewed before running the script:
 
@@ -108,13 +78,16 @@ To specify more detailed default export settings, you need to prepare an export 
 
 #### Save an export settings file
 On the export window in the Spine editor, there is a Save button in the lower left corner that allows you to save the current export settings as a JSON file.  
+
 ![image1](https://github.com/misaki-eymard/custom-spine-scripts/assets/85478846/df7e97a3-a580-4f02-8aa5-693bd667f081)
 
 The saved export settings file will have the extension `.export.json`.  
+
 ![image3](https://github.com/misaki-eymard/custom-spine-scripts/assets/85478846/aa6807e6-daa3-4492-80a6-f7c69c55555d)
 
 
 If `Pack` was checked in the export settings then the texture packer settings are also saved in the `.export.json` file.  
+
 ![image2](https://github.com/misaki-eymard/custom-spine-scripts/assets/85478846/37f21286-1efe-49cd-8a18-35708c2ff51f)
 
 
