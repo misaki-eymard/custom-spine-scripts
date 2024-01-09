@@ -42,6 +42,7 @@ IF NOT EXIST %SPINE_EXE% (
 IF NOT EXIST !SPINE_EXE! (
 	echo Error: Spine editor executable was not found.
 	echo Edit the script and set the 'SPINE_EXE' path.
+	IF /I %0 EQU "%~dpnx0" PAUSE
 	exit /B 1
 )
 
@@ -150,6 +151,7 @@ echo ================================
 IF %spine_file_count% EQU 0 (
 	echo Error: No files with the '.spine' extension were found.
 	echo ================================
+	IF /I %0 EQU "%~dpnx0" PAUSE
 	exit /B 1
 ) ELSE (
 	echo Exporting complete.
