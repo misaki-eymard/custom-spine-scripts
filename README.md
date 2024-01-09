@@ -171,13 +171,11 @@ You are welcome to modify the script to meet your needs. We have written comment
 ## Find .spine projects
 In this script, the following code generates a temporary file and stores the path in “tmp_file”:
 ```
-# Save .spine files to a temporary file.
 tmp_file=$(mktemp)
 ```
 
 The subsequent code recursively searches for files with a ".spine" extension and records them in the temporary file created earlier:
 ```
-# Search recursively for files with extension ".spine".
 find "$search_dir" -type f -name "*.spine" > "$tmp_file"
 ```
 
@@ -203,7 +201,6 @@ The initial segment of the while statement outputs a message, updating the scrip
 
 Then, the parent directory of the `.spine` file is stored in `parent_path`:
 ```
-	# Set parent_path to the .spine file's parent directory.
 	parent_path="$(dirname "$file_path")"
 ```
 
@@ -286,8 +283,10 @@ This process checks that the parameter "class" exists in the `.export.json` file
 
 If it is not a valid `.export.json`, skip that export if more than one `.export.json` is found. If only that `.export.json` is found, the export is performed with default settings.
 
+----
+
 ## Exporting a found .spine project
-The script contains two primary functions: `exportUsingJsonSettings()` and `exportUsingDefaultSettings()`.
+The script incorporates two primary functions: `exportUsingJsonSettings()` and `exportUsingDefaultSettings()`.
 Upon finding a file with a `.spine` extension,  `exportUsingJsonSettings()` is called when a valid `.export.json` file is present in the same directory. Conversely, if the file is not found, `exportUsingDefaultSettings()` is called.
 
 ### exportUsingDefaultSettings()
@@ -318,21 +317,23 @@ This function requires the arguments `parent_path` and `file_path` when called. 
 
 The array `command_args` stores the Spine version, the path to the Spine project for export, the output directory path, and the export settings JSON path. This means that the bolded segments in the following commands are grouped together in `command_args`:
 
-Spine **--update (Version number) -i (Path to the SpineProject file) -o (Path to the output directory) -e (Export settings)**
+Spine **--update (Version number) --input (Path to the SpineProject file) --output (Path to the output directory) --export (Path to export settings JSON path)**
 
 The command "${command_args[@]}" passes these commands to the Spine executable for the execution of the export process.
 
 Upon completion of the export, the script notifies that it has exported in the same directory as the Spine project and then concludes the loop.
 
+----
+
 ### exportUsingJsonSettings()
-*The same parts as in exportUsingDefaultSettings() are omitted in this explanation.
+*The same parts as in `exportUsingDefaultSettings()` are omitted in this guide.
 
 The following line extracts the value of the "output" parameter from the `.export.json` file and stores it in the `output_path` variable:
 ```
 	output_path=$(sed -n 's/"output".*"\([^"]*\)"/\1/p' "$json_file" | sed -r 's/\\\\/\\/g' | sed -r 's/,$//g' )
 ```
 
-If the output path specified in the `.export.json` file is invalid, Spine will return an error. The following part counts this error, finds an alternative possible output path, and performs the export:
+If the output path specified in the `.export.json` file is invalid, Spine will return an error. The script counts this error, finds an alternative possible output path, and performs the export:
 ```
 	if "$SPINE_EXE" "${command_args[@]}"; then
 		echo "Exported to the following directory: $output_path"
@@ -352,6 +353,8 @@ If the output path specified in the `.export.json` file is invalid, Spine will r
 ```
 
 Upon completion of the export, the script notifies the specified output directory in the .export.json file that the file has been exported, and then exits the loop.
+
+----
 
 ### End of loop
 By default, the script waits for a keystroke, but if you do not need this, comment out the following line:
